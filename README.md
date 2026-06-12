@@ -85,7 +85,15 @@ J-Link書込み→完走マーカ待ち）をビルドディレクトリで実�
 |---|---|
 | sample1 | バナー・task1周期実行・`r`（rot_rdq）でtask1→2→3切替 |
 | test_porting（6項目） | **6/6 passed** |
-| testexec 代表8件（task1/sem1/flg1/dtq1/int1/tmevt1/hrt1/dlynse） | **全PASS**（dlynse NG=0） |
+| testexec 全件（36テスト） | **33 PASS／1 SKIP（cpuexc10=not necessary）／2 FAIL（cpuexc1・cpuexc4＝arm_m 共通の上流由来の既知問題．asp3_core `docs/dev/issue-cpuexc-armm.md`）**．dlynse は NG=0（較正値 SIL_DLY_TIM1/2=27/19） |
+
+testexec の実行は専用ラッパを使う（ボードと VCOM を占有するため並行実行禁止）：
+
+```bash
+scripts/testexec_mcuxsdk.py              # 全件（約30分）
+scripts/testexec_mcuxsdk.py task1 sem1   # 個別指定
+scripts/testexec_mcuxsdk.py --rejudge    # 保存済みログの再判定のみ
+```
 
 ## 主要な技術ポイント
 
