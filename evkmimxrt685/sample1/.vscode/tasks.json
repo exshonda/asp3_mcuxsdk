@@ -16,7 +16,7 @@
       "problemMatcher": [
         "$gcc"
       ],
-      "detail": "ASP3 sample1 build (Debug preset)"
+      "detail": "CMake template build task"
     },
     {
       "type": "cmake",
@@ -26,7 +26,7 @@
       "problemMatcher": [
         "$gcc"
       ],
-      "detail": "ASP3 sample1 clean"
+      "detail": "CMake template clean task"
     },
     {
       "type": "cmake",
@@ -36,7 +36,7 @@
       "problemMatcher": [
         "$gcc"
       ],
-      "detail": "ASP3 sample1 configure"
+      "detail": "CMake template configure task"
     }
   ]
 }

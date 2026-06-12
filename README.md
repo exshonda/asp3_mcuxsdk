@@ -81,6 +81,16 @@ cd evkmimxrt685/sample1/build/Debug
 J-Link書込み→完走マーカ待ち）をビルドディレクトリで実行する。
 **VCOM（/dev/ttyACM0）を読むプロセスは同時に1つだけ**にすること。
 
+## VS Code（MCUXpresso for VS Code 拡張）
+
+`evkmimxrt685/sample1` は NXP 公式拡張
+[MCUXpresso for VS Code](https://marketplace.visualstudio.com/items?itemName=NXPSemiconductors.mcuxpresso)
+に対応している（実機検証済み）。フォルダを VS Code で開くと PROJECTS ビューに
+認識され、Build（CMake Presets）・Debug（フラッシュ→`main` 停止．プローブは
+LinkServer/J-Link を自動検出）・実行中システムへの Attach 構成が使える。
+詳細・知見は [`docs/vscode-support-plan.md`](docs/vscode-support-plan.md) と
+[`docs/tech-notes.md`](docs/tech-notes.md) §8。
+
 ## 検証状況（実機・2026-06-12）
 
 | 項目 | 結果 |
@@ -105,6 +115,7 @@ scripts/testexec_mcuxsdk.py --flash-tool jlink ...   # J-Linkファームウェ�
 | [`docs/host-setup.md`](docs/host-setup.md) | 実機検証ホストPCの構築（LinkServer/LPCScryptの導入・プローブのファームウェア確認と切替・VCOMの注意・ジャンパ） |
 | [`docs/verification.md`](docs/verification.md) | 実機検証のスナップショットと再実行手順（testexec/test_porting/sample1/OS Awareness） |
 | [`docs/tech-notes.md`](docs/tech-notes.md) | SDK統合の技術ノート（TrustZone/EXC_RETURN・ベクタテーブル配置・HRT精度・LinkServerの注意ほか） |
+| [`docs/vscode-support-plan.md`](docs/vscode-support-plan.md) | MCUXpresso for VS Code 対応の経緯・検証結果 |
 
 経緯（計画・実施結果）の正本は asp3_core 側の
 [`docs/dev/nxp-integration.md`](https://github.com/exshonda/asp3_core/blob/main/docs/dev/nxp-integration.md)。

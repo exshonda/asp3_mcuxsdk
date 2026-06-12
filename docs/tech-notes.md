@@ -107,3 +107,19 @@ Phase A（300MHz・自前PLL設定）とはクロックが異なるので、`CPU
 | CMake（flash/gdbserver/gdb/debug/osdebug） | `-DMIMXRT685_DEBUGGER=linkserver\|jlink` | linkserver |
 | ボードランナ（asp3_core run_board_mimxrt685evk.sh） | `MIMXRT685_FLASH=jlink` | linkserver |
 | testexec ラッパ（scripts/testexec_mcuxsdk.py） | `--flash-tool jlink` | linkserver |
+
+## 8. MCUXpresso for VS Code 拡張
+
+対応の経緯・検証は `docs/vscode-support-plan.md`。要点：
+
+- 拡張用メタデータは **`.vscode/mcuxpresso-tools.json`**
+  （`projectType: "cmake-freestanding"`・`${userHome}` 変数可）
+- launch.json はデバッグタイプ **`mcuxpresso-debug`**。
+  `gdbServerConfigs: {linkserver:{}, segger:{}, pemicro:{}}`（空）で
+  **接続プローブを自動検出**＝LinkServer/J-Link どちらのファームウェアでも動く。
+  ASP3 観測用に `set mem inaccessible-by-default off` を gdbInitCommands に追加済み
+  （§6 と同じ理由）
+- **CMakePresets.json は version 7 必須**：拡張がプロジェクト認識時に
+  環境ブロック（`${pathListSep}` マクロ使用・マシン固有絶対パス）を自動注入する。
+  v3 のままだと CMake Tools の展開が失敗し Build できない。
+  注入されたパスは本プロジェクトのビルドでは未参照のため実害なし

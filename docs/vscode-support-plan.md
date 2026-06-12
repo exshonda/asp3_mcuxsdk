@@ -129,6 +129,30 @@ ASP3 用の追加点：launch の `gdbInitCommands` に
 `set mem inaccessible-by-default off`（docs/tech-notes.md §6 の制限対策）、
 OS 観測用に `isAttach: true` の第2構成を用意。
 
+
+## 検証結果（2026-06-12・Step 3 完了）
+
+VS Code（MCUXpresso 26.5.49）で `evkmimxrt685/sample1` を開いて確認：
+
+| 項目 | 結果 |
+|---|---|
+| PROJECTS ビューでの認識（asp3_sample1） | OK |
+| Build（CMake Tools・Debug プリセット） | OK（下記修正後） |
+| Debug（フラッシュ→main 停止→実行→停止・終了） | OK |
+| シリアル（minicom 115200・sample1 出力） | OK |
+
+### 検証中に判明・修正した点
+
+1. **CMakePresets.json は version 7 が必要**：拡張がプロジェクト認識時に
+   `default` プリセットへ環境ブロック（`ARMGCC_DIR`・`SdkRootDirPath`・
+   `PATH=$env{MCUX_VENV_PATH}${pathListSep}$penv{PATH}` 等）を**自動注入**する。
+   `${pathListSep}` は presets v5 以降のマクロのため、`"version": 3` のままだと
+   CMake Tools の展開が失敗し「configure preset が見つからない」→ Build NG になる。
+   → `"version": 7`・`cmakeMinimumRequired 3.27`（CMake 3.28 で確認）に変更して解消
+2. 注入される環境ブロックは**マシン固有の絶対パス**を含むが、本プロジェクトの
+   ビルド（自前 toolchainFile）はこれらの環境変数を参照しないため実害なし。
+   他マシンでは拡張が再注入し働き先のパスに更新される（差分が出ることがある）
+
 ## 参考
 
 - [MCUXpresso for VS Code（Marketplace）](https://marketplace.visualstudio.com/items?itemName=NXPSemiconductors.mcuxpresso)
