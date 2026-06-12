@@ -3,13 +3,14 @@
 実施済みの経緯は `asp3/asp3_core/docs/dev/nxp-integration.md`（正本）と
 `docs/vscode-support-plan.md` を参照。
 
-## 1. CI（GitHub Actions）
+## 1. CI（GitHub Actions） — 完了（2026-06-12）
 
-ビルドジョブ未整備。SDK は submodule 直参照（west・GUI生成ツール不要）のため、
-`actions/checkout` の `submodules: recursive`＋arm-none-eabi-gcc 導入だけで
-`cmake --preset Debug && cmake --build` がそのまま動くはず。
-asp3_core の ci.yml（mimxrt685evk build-only ジョブ）が参考になる。
-テスト実行は実機が要るため CI ではビルドのみ。
+`.github/workflows/ci.yml` を新設。asp3_core と同じ開発コンテナイメージ
+（`ghcr.io/exshonda/asp3_core-dev:20260606`）で `actions/checkout`
+（`submodules: recursive`）→ `cmake --preset Debug && cmake --build` の
+build-only ジョブ。CMakePresets の machine 固有 env（`/home/honda/...`）は
+ビルドに不要（PATH 上の arm-none-eabi-gcc を使う＝当該パス不在のローカルでも
+ビルドが通ることを確認済み）。テスト実行は実機が要るため CI ではビルドのみ。
 
 ## 2. 移植 skill（porting-asp3-to-nxp）
 
@@ -40,7 +41,9 @@ submodule 追加（または該当 SVD 1ファイルのコピー）→ launch.js
 
 - `LinkServer` の PATH 化（/usr/local/bin へのシンボリックリンク）を host-setup に
   含めるか検討（現状は各スクリプトがフルパス既定＋`LINKSERVER` 環境変数で対応）
-- feat/mimxrt685evk（asp3_core）の main マージ後に submodule を main 追従へ戻す
+- ~~feat/mimxrt685evk（asp3_core）の main マージ後に submodule を main 追従へ戻す~~
+  → 完了（2026-06-12）：asp3_core PR #1（squash）で main に取り込まれ、submodule を
+  main の `32f9749` へ bump 済み
 - VS Code 拡張が CMakePresets.json / .vscode に注入する差分の扱い
   （現状：コミットして共有。マシン固有パスはビルド未参照のため実害なし。
   気になる場合は拡張側のアップデートで方式が変わる可能性に注意）
