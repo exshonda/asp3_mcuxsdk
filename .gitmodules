@@ -1,3 +1,15 @@
 [submodule "asp3/asp3_core"]
 	path = asp3/asp3_core
 	url = https://github.com/exshonda/asp3_core.git
+[submodule "sdk/core"]
+	path = sdk/core
+	url = https://github.com/nxp-mcuxpresso/mcuxsdk-core
+[submodule "sdk/devices-rt"]
+	path = sdk/devices-rt
+	url = https://github.com/nxp-mcuxpresso/mcux-devices-rt
+[submodule "sdk/cmsis"]
+	path = sdk/cmsis
+	url = https://github.com/nxp-mcuxpresso/mcu-sdk-cmsis
+[submodule "sdk/components"]
+	path = sdk/components
+	url = https://github.com/nxp-mcuxpresso/mcux-component
