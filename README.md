@@ -31,10 +31,11 @@ asp3_mcuxsdk/
 │   ├── devices-rt/  … mcux-devices-rt（RT600デバイスファイル・startup・ld）
 │   ├── cmsis/       … mcu-sdk-cmsis（CMSIS Core）
 │   └── components/  … mcux-component（fsl_debug_console ヘッダ等）
-└── evkmimxrt685/                        ← ボードプロジェクト
-    ├── CMakeLists.txt / CMakePresets.json / main.c
-    ├── MIMXRT685Sxxxx_cm33_flash.ld     ← SDK の ld に ASP3 ベクタテーブル配置を追加
-    └── board/                           ← SDK examples のボード初期化ファイル（BSD-3）
+└── evkmimxrt685/                        ← ボードディレクトリ（asp3_fsp と同構成）
+    └── sample1/                         ← アプリプロジェクト
+        ├── CMakeLists.txt / CMakePresets.json / main.c
+        ├── MIMXRT685Sxxxx_cm33_flash.ld ← SDK の ld に ASP3 ベクタテーブル配置を追加
+        └── board/                       ← SDK examples のボード初期化ファイル（BSD-3）
 ```
 
 SDK は west を使わず、`mcuxsdk-manifests` release/26.03.00 が指すリビジョンを
@@ -49,7 +50,7 @@ git clone --recurse-submodules https://github.com/exshonda/asp3_mcuxsdk.git
 ## ビルド
 
 ```bash
-cd evkmimxrt685
+cd evkmimxrt685/sample1
 cmake --preset Debug
 cmake --build build/Debug          # → build/Debug/asp.elf
 ```
@@ -70,7 +71,7 @@ cmake --build build/Debug-porting
 と共通（J-Link ファームウェアのオンボードプローブ＋SEGGER J-Link Software）：
 
 ```bash
-cd evkmimxrt685/build/Debug
+cd evkmimxrt685/sample1/build/Debug
 printf 'loadfile asp.elf\nr\ng\nqc\n' > fl.jlink
 JLinkExe -device MIMXRT685S_M33 -if SWD -speed 4000 -autoconnect 1 -NoGui 1 -CommandFile fl.jlink
 ```

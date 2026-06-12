@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 
 #
-#  TOPPERS/ASP3 Core ＋ MCUXpresso SDK 統合プロジェクト（EVK-MIMXRT685）
+#  TOPPERS/ASP3 Core ＋ MCUXpresso SDK 統合プロジェクト（EVK-MIMXRT685／sample1）
 #
 #  SDK のスタートアップ・リンカスクリプト・ボード初期化（クロック/ピン/
 #  FlexSPI=XIP）でブートし，main() が sta_ker() を呼んで ASP3 を起動する．
@@ -27,7 +27,7 @@ message("Build type: " ${CMAKE_BUILD_TYPE})
 set(CMAKE_EXPORT_COMPILE_COMMANDS TRUE)
 
 #  MCUXpresso SDK（サブモジュール）のパス
-get_filename_component(MCUX_SDK_DIR ${CMAKE_SOURCE_DIR}/../sdk ABSOLUTE)
+get_filename_component(MCUX_SDK_DIR ${CMAKE_SOURCE_DIR}/../../sdk ABSOLUTE)
 set(MCUX_DEVICE_DIR ${MCUX_SDK_DIR}/devices-rt/RT600/MIMXRT685S)
 
 add_executable(asp)
@@ -38,7 +38,7 @@ add_executable(asp)
 set(ASP3_TARGET evkmimxrt685_mcuxsdk)
 
 #  MCUXSDK 協調ヘルパ（ASP3_TARGET_DIR / ASP3_CORE_DIR / ASP3_ROOT_DIR を解決）
-include(../asp3/asp3_mcuxsdk.cmake)
+include(../../asp3/asp3_mcuxsdk.cmake)
 
 #  アプリ（タスク定義）は asp3_core 同梱 sample（自作アプリに差し替え可）
 #  -D ASP3_APPLDIR/ASP3_APPLNAME 指定時はそれを尊重する（test_porting 等の差し替え用）

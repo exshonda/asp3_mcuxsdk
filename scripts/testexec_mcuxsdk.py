@@ -23,7 +23,7 @@
 #  バイトを奪い合い誤判定の原因になる。並行実行も禁止）。
 #
 #  使い方:
-#    scripts/testexec_mcuxsdk.py [--board evkmimxrt685] [--port /dev/ttyACM0] [test ...]
+#    scripts/testexec_mcuxsdk.py [--board evkmimxrt685/sample1] [--port /dev/ttyACM0] [test ...]
 #    テスト名省略時は標準機能テスト一式（拡張パッケージ・perf・arm_* は対象外）
 #
 import argparse
@@ -153,7 +153,8 @@ def judge_serial(test, fd, deadline, log_file):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--board", default="evkmimxrt685")
+    ap.add_argument("--board", default="evkmimxrt685/sample1",
+                    help="ボードプロジェクトのパス（REPO相対）")
     ap.add_argument("--port", default="/dev/ttyACM0")
     ap.add_argument("--jlink-device", default="MIMXRT685S_M33")
     ap.add_argument("--run-timeout", type=int, default=90)
