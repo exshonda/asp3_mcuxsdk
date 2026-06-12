@@ -84,7 +84,7 @@ while vector_table_align < (TMAX_INTNO + 1) * 4:
     vector_table_align *= 2
 
 kernelCfgC.append(f"""/*
- *  Target-dependent Definitions (ARM-M / STM32Cube)
+ *  Target-dependent Definitions (ARM-M / MCUXpresso SDK)
  */
 
 /*

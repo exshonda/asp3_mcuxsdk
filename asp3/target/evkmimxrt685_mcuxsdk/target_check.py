@@ -3,7 +3,7 @@
 #   TOPPERS/ASP Kernel
 #   $Id: target_check.py (converted from target_check.trb) $
 #
-#     パス3のターゲット依存テンプレート（EVK-MIMXRT685 + MCUXpresso SDK / STM32Cube HAL 用）
+#     パス3のターゲット依存テンプレート（EVK-MIMXRT685 + MCUXpresso SDK 用）
 #
 
 #

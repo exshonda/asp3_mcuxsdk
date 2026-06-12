@@ -1,7 +1,7 @@
 #
 #  TOPPERS/ASP3 Core ＋ NXP MCUXpresso SDK 協調動作ヘルパ
 #
-#  アプリ（evkmimxrt685/CMakeLists.txt）から include する．役割：
+#  アプリ（evkmimxrt685/sample1/CMakeLists.txt）から include する．役割：
 #   - ASP3_TARGET → ASP3_TARGET_DIR（MCUXSDKターゲット依存部）の解決
 #   - ASP3_CORE_DIR（純カーネル submodule）／ASP3_ROOT_DIR の設定
 #   - asp3_set_mcuxsdk_options()：MCUXSDK協調に要る設定（現状なし）
