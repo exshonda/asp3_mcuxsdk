@@ -1,0 +1,16 @@
+{
+  "version": "25.3",
+  "projectName": "asp3_sample1",
+  "projectType": "cmake-freestanding",
+  "toolchainPath": "${userHome}/.mcuxpressotools/arm-gnu-toolchain-14.2.rel1-x86_64-arm-none-eabi",
+  "linkedProjects": [],
+  "trustZoneType": "none",
+  "multicoreType": "none",
+  "sdk": {
+    "version": "26.3.0.0",
+    "path": "${userHome}/MCUXSDK/mcuxsdk",
+    "boardId": "evkmimxrt685",
+    "deviceId": "MIMXRT685S",
+    "coreId": "cm33"
+  }
+}

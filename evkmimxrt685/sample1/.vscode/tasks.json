@@ -1,0 +1,42 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "cmake",
+      "label": "CMake: build",
+      "command": "build",
+      "preset": "Debug",
+      "targets": [
+        "all"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "detail": "ASP3 sample1 build (Debug preset)"
+    },
+    {
+      "type": "cmake",
+      "label": "CMake: clean",
+      "command": "clean",
+      "preset": "Debug",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "detail": "ASP3 sample1 clean"
+    },
+    {
+      "type": "cmake",
+      "label": "CMake: configure",
+      "command": "configure",
+      "preset": "Debug",
+      "problemMatcher": [
+        "$gcc"
+      ],
+      "detail": "ASP3 sample1 configure"
+    }
+  ]
+}

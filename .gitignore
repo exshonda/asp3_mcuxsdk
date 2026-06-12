@@ -4,4 +4,4 @@ build/
 *.hex
 *.map
 __pycache__/
-.vscode/settings.json
+# .vscode は拡張対応のためコミット対象（個人設定はユーザーレベル設定へ）

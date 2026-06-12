@@ -107,12 +107,27 @@ NXP 公式の **MCUXpresso for VS Code** 拡張から本リポジトリのプロ
 - asp3_core 側 `docs/dev/nxp-integration.md` の残課題に結果を追記
 - コミットは feat（.vscode/メタデータ追加）＋docs
 
-## 未確定事項（Step 3 で確定させる）
+## 未確定事項の解消（2026-06-12・Import Example の生成物解析で確定）
 
-1. `sdk.path` の要否・正しい値（cmake-freestanding でデバイス関連付けに必要か）
-2. ウィザード生成の launch.json と本プラン案の差分（probeType の表記等）
-3. `mcuxpresso-tools.json` の `${workspaceFolder}` 変数が使えるか（不可なら相対パス）
-4. Windows ホストでのパス（toolchainPath 未指定で Installer 管理ツールが使われるか）
+`~/TOPPERS/ASP3CORE/mcusdk_sample/test/evkmimxrt685_hello_world_cm33`
+（hello_world・sdk-v2-freestanding）の生成物を解析した結果：
+
+1. **`mcuxpresso-tools.json` は `.vscode/` 内に置く**（プロジェクトルートではない）。
+   `${userHome}` 変数が使える。`toolchainPath` は MCUXpresso Installer の
+   armgcc（`${userHome}/.mcuxpressotools/arm-gnu-toolchain-*`）を指す。
+   `sdk` は `{version, path=${userHome}/MCUXSDK/mcuxsdk, boardId, deviceId, coreId}`
+   形式（リポジトリの場所が違う場合は GUI の Configure→repository 関連付けで修正可）
+2. **launch.json の実形式**：`probeType` ではなく
+   `gdbServerConfigs: {"linkserver": {}, "segger": {}, "pemicro": {}}`（空＝
+   プローブ自動検出）＋ `probeSerialNumber: ""`。`executable` は
+   `{"elf": "<path>"}` のオブジェクト形式。`gdbInitCommands` に既定3コマンド
+3. settings.json は `cmake.useCMakePresets: "always"` ほか（そのまま流用）
+4. tasks.json は type "cmake"＋preset 名
+
+→ 上記に基づき `evkmimxrt685/sample1/.vscode/` を実装済み（Step 1〜2 完了）。
+ASP3 用の追加点：launch の `gdbInitCommands` に
+`set mem inaccessible-by-default off`（docs/tech-notes.md §6 の制限対策）、
+OS 観測用に `isAttach: true` の第2構成を用意。
 
 ## 参考
 
