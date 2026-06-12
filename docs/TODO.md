@@ -12,13 +12,20 @@ build-only ジョブ。CMakePresets の machine 固有 env（`/home/honda/...`�
 ビルドに不要（PATH 上の arm-none-eabi-gcc を使う＝当該パス不在のローカルでも
 ビルドが通ることを確認済み）。テスト実行は実機が要るため CI ではビルドのみ。
 
-## 2. 移植 skill（porting-asp3-to-nxp）
+## 2. 移植 skill（porting-asp3-to-nxp） — 完了（2026-06-12）
 
-asp3_fsp（porting-asp3-to-renesas-ra）・asp3_stm32cube（porting-asp3-to-stm32）と
-同様の `.claude/skills/` パッケージ。素材は揃っている：
-- 手順の正本：`docs/host-setup.md`・`docs/tech-notes.md`・nxp-integration.md
-- 特に他の RT6xx/RT5xx ボードへ展開する際の要点＝tech-notes §1（ブートイメージ
-  タイプと EXC_RETURN）・§2（ベクタテーブル配置）・§3（クロック換算）
+`.claude/skills/porting-asp3-to-nxp/` を asp3_stm32cube（porting-asp3-to-stm32）と
+同構成で作成：
+- `SKILL.md`（エントリ・前提知識・地雷サマリ・ビルド/書込み）
+- `reference/boot-vector-pitfalls.md`（Secureブート/EXC_RETURN・ベクタ配置・VTOR整列・
+  HRT精度・マクロ二重定義）・`sdk-acquisition.md`（west非使用のsubmodule直参照と更新）・
+  `flash-debug-tools.md`（LinkServer/J-Link・VCOM・OS Awareness）
+- `checklists/new-board.md`（新ボード追加・Step0=ブート経路の確定が最重要）・
+  `bringup-debug.md`（症状→原因）
+- `snippets/kernel_vector-section.ld`（.kernel_vector 配置・実物から抽出）
+
+素材＝`docs/host-setup.md`・`docs/tech-notes.md`・nxp-integration.md（tech-notes §1
+ブートイメージタイプとEXC_RETURN・§2ベクタ配置・§3クロック換算を反映）。
 
 ## 3. SVD（Peripherals ビュー）
 
