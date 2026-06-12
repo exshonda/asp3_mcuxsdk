@@ -31,6 +31,11 @@ NXP 公式の **MCUXpresso for VS Code** 拡張から本リポジトリのプロ
 
 ## 実施手順
 
+> **注**：Step 1〜2 の JSON 案は検討時点のもの。実際の形式は後述
+> 「未確定事項の解消」のとおり（mcuxpresso-tools.json は `.vscode/` 内・
+> probeType ではなく gdbServerConfigs 等）。実装済みの正は
+> `evkmimxrt685/sample1/.vscode/` を参照。
+
 ### Step 1: mcuxpresso-tools.json の追加（`evkmimxrt685/sample1/`）
 
 ```json

@@ -96,6 +96,14 @@ Phase A（300MHz・自前PLL設定）とはクロックが異なるので、`CPU
   マーカ判定はこれを許容する設計）。
 - LinkServer は PATH に入らない（`/usr/local/LinkServer/LinkServer`）。
   各スクリプトは環境変数 `LINKSERVER` で上書き可能。
+- **gdb バッチ自動化の注意**：LinkServer gdbserver（非attach）に gdb -batch で
+  `continue` すると停止を待たずに次コマンドへ進むことがある（"Cannot execute
+  this command while the target is running"）。スクリプト化するときは
+  attach モード＋`interrupt`＋`shell sleep` の組合せが確実
+  （`scripts/testexec_mcuxsdk.py` はシリアルマーカ判定のため gdb 不使用）。
+- 接続が不安定なとき（メモリが全FF・フラッシュが0に見える等）は、残留した
+  redlink サーバプロセスや bootROM ストール状態が原因のことがある。
+  gdbserver を素直に止めて `flash load` からやり直すのが早い。
 
 ## 7. デバッガの切替（LinkServer ⇔ J-Link）
 

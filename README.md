@@ -116,6 +116,7 @@ scripts/testexec_mcuxsdk.py --flash-tool jlink ...   # J-Linkファームウェ�
 | [`docs/verification.md`](docs/verification.md) | 実機検証のスナップショットと再実行手順（testexec/test_porting/sample1/OS Awareness） |
 | [`docs/tech-notes.md`](docs/tech-notes.md) | SDK統合の技術ノート（TrustZone/EXC_RETURN・ベクタテーブル配置・HRT精度・LinkServerの注意ほか） |
 | [`docs/vscode-support-plan.md`](docs/vscode-support-plan.md) | MCUXpresso for VS Code 対応の経緯・検証結果 |
+| [`docs/TODO.md`](docs/TODO.md) | 残課題（CI・移植skill・SVD）とアプリプロジェクト追加手順 |
 
 経緯（計画・実施結果）の正本は asp3_core 側の
 [`docs/dev/nxp-integration.md`](https://github.com/exshonda/asp3_core/blob/main/docs/dev/nxp-integration.md)。
