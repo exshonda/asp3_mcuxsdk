@@ -6,8 +6,8 @@
 #  asp3_core の test/testexec.py は asp3_core 単体を configure する前提のため、
 #  外側プロジェクト（evkmimxrt685）では使えない。本スクリプトは外側プロジェクト
 #  を 1 テストずつ configure（-DASP3_APPLDIR/APPLNAME/APPCFGNAME 差し替え）→
-#  build → JLinkExe で書込み → シリアル出力を判定する
-#  （asp3_stm32cube の scripts/testexec_stm32.py の移植）。
+#  build → LinkServer（標準）または JLinkExe（--flash-tool jlink）で書込み →
+#  シリアル出力を判定する（asp3_stm32cube の scripts/testexec_stm32.py の移植）。
 #
 #  判定は CI ランナー（asp3_core scripts/ci/run_testexec.py）互換:
 #    PASS    "All check points passed."（hrt1/dlynse は SPECIAL_SPEC の完走マーカ）
@@ -17,8 +17,9 @@
 #
 #  --rejudge で（実行せず）保存済み serial ログのみ再判定する。
 #
-#  前提: オンボードプローブが J-Link ファームウェアで、SEGGER J-Link Software
-#  が導入済みであること（asp3_core target/mimxrt685evk_gcc/target_user.md 参照）。
+#  前提: オンボードプローブ（LPC-Link2）が標準のCMSIS-DAPファームウェアで、
+#  LinkServer が導入済みであること（J-Linkファームウェア化した場合は
+#  --flash-tool jlink。asp3_core target/mimxrt685evk_gcc/target_user.md 参照）。
 #  VCOM（--port）を読むプロセスは本スクリプトのみにすること（複数リーダは
 #  バイトを奪い合い誤判定の原因になる。並行実行も禁止）。
 #
@@ -39,6 +40,10 @@ REPO = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), 
 CORE = os.path.join(REPO, "asp3", "asp3_core")
 
 JLINK = "JLinkExe"
+LINKSERVER = (os.environ.get("LINKSERVER")
+              or ("/usr/local/LinkServer/LinkServer"
+                  if os.path.exists("/usr/local/LinkServer/LinkServer")
+                  else "LinkServer"))
 
 #  標準機能テスト（asp3_core test/testexec.py の TEST_SPEC から、
 #  拡張パッケージ（messagebuf/ovrhdr/rstr/subprio/inherit）・perf・arm_* を除く）
@@ -156,6 +161,9 @@ def main():
     ap.add_argument("--board", default="evkmimxrt685/sample1",
                     help="ボードプロジェクトのパス（REPO相対）")
     ap.add_argument("--port", default="/dev/ttyACM0")
+    ap.add_argument("--flash-tool", choices=["linkserver", "jlink"],
+                    default="linkserver")
+    ap.add_argument("--ls-device", default="MIMXRT685S:EVK-MIMXRT685")
     ap.add_argument("--jlink-device", default="MIMXRT685S_M33")
     ap.add_argument("--run-timeout", type=int, default=90)
     ap.add_argument("--rejudge", action="store_true",
@@ -183,14 +191,19 @@ def main():
 
     check_port_free(args.port)
 
-    #  J-Link コマンドファイル（フラッシュ書込み→リセット→実行）
-    jlink_cmd = os.path.join(build_dir, "flash.jlink")
-    with open(jlink_cmd, "w") as f:
-        f.write("loadfile asp.elf\nr\ng\nqc\n")
-    flash_cmd = (
-        f"cd {build_dir} && {JLINK} -device {args.jlink_device} -if SWD "
-        f"-speed 4000 -autoconnect 1 -NoGui 1 -CommandFile {jlink_cmd}"
-    )
+    #  書込みコマンド（LinkServer＝load後にリセット実行／J-Link＝loadfile→r→g）
+    if args.flash_tool == "jlink":
+        jlink_cmd = os.path.join(build_dir, "flash.jlink")
+        with open(jlink_cmd, "w") as f:
+            f.write("loadfile asp.elf\nr\ng\nqc\n")
+        flash_cmd = (
+            f"cd {build_dir} && {JLINK} -device {args.jlink_device} -if SWD "
+            f"-speed 4000 -autoconnect 1 -NoGui 1 -CommandFile {jlink_cmd}"
+        )
+    else:
+        flash_cmd = (
+            f"cd {build_dir} && {LINKSERVER} flash {args.ls_device} load asp.elf"
+        )
 
     for test in args.tests:
         spec = TEST_SPEC.get(test)

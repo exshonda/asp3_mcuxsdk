@@ -68,12 +68,12 @@ cmake --build build/Debug-porting
 
 書込み・VCOM・テストランナの手順は asp3_core 側の
 [`target/mimxrt685evk_gcc/target_user.md`](https://github.com/exshonda/asp3_core/blob/feat/mimxrt685evk/target/mimxrt685evk_gcc/target_user.md)
-と共通（J-Link ファームウェアのオンボードプローブ＋SEGGER J-Link Software）：
+と共通。**標準はオンボードLPC-Link2のCMSIS-DAP（出荷時ファームウェア）＋
+LinkServer**（プローブをJ-Link化した場合は各ツールのオプションで切替可）：
 
 ```bash
 cd evkmimxrt685/sample1/build/Debug
-printf 'loadfile asp.elf\nr\ng\nqc\n' > fl.jlink
-JLinkExe -device MIMXRT685S_M33 -if SWD -speed 4000 -autoconnect 1 -NoGui 1 -CommandFile fl.jlink
+/usr/local/LinkServer/LinkServer flash MIMXRT685S:EVK-MIMXRT685 load asp.elf
 ```
 
 テスト実行は asp3_core の `scripts/ci/run_board_mimxrt685evk.sh`（UARTキャプチャ→
@@ -94,6 +94,7 @@ testexec の実行は専用ラッパを使う（ボードと VCOM を占有す�
 scripts/testexec_mcuxsdk.py              # 全件（約30分）
 scripts/testexec_mcuxsdk.py task1 sem1   # 個別指定
 scripts/testexec_mcuxsdk.py --rejudge    # 保存済みログの再判定のみ
+scripts/testexec_mcuxsdk.py --flash-tool jlink ...   # J-Linkファームウェア時
 ```
 
 ## 主要な技術ポイント
