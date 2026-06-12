@@ -31,6 +31,7 @@ asp3_mcuxsdk/
 │   ├── devices-rt/  … mcux-devices-rt（RT600デバイスファイル・startup・ld）
 │   ├── cmsis/       … mcu-sdk-cmsis（CMSIS Core）
 │   └── components/  … mcux-component（fsl_debug_console ヘッダ等）
+├── docs/                                ← 知見・検証記録（host-setup / verification / tech-notes）
 └── evkmimxrt685/                        ← ボードディレクトリ（asp3_fsp と同構成）
     └── sample1/                         ← アプリプロジェクト
         ├── CMakeLists.txt / CMakePresets.json / main.c
@@ -96,6 +97,17 @@ scripts/testexec_mcuxsdk.py task1 sem1   # 個別指定
 scripts/testexec_mcuxsdk.py --rejudge    # 保存済みログの再判定のみ
 scripts/testexec_mcuxsdk.py --flash-tool jlink ...   # J-Linkファームウェア時
 ```
+
+## ドキュメント
+
+| ファイル | 内容 |
+|---|---|
+| [`docs/host-setup.md`](docs/host-setup.md) | 実機検証ホストPCの構築（LinkServer/LPCScryptの導入・プローブのファームウェア確認と切替・VCOMの注意・ジャンパ） |
+| [`docs/verification.md`](docs/verification.md) | 実機検証のスナップショットと再実行手順（testexec/test_porting/sample1/OS Awareness） |
+| [`docs/tech-notes.md`](docs/tech-notes.md) | SDK統合の技術ノート（TrustZone/EXC_RETURN・ベクタテーブル配置・HRT精度・LinkServerの注意ほか） |
+
+経緯（計画・実施結果）の正本は asp3_core 側の
+[`docs/dev/nxp-integration.md`](https://github.com/exshonda/asp3_core/blob/main/docs/dev/nxp-integration.md)。
 
 ## 主要な技術ポイント
 
