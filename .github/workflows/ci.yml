@@ -1,0 +1,48 @@
+#
+#		CI（EVK-MIMXRT685 / MCUXpresso SDK統合 build-only）
+#
+#  asp3_core の ci.yml（mimxrt685evk build-only ジョブ）と同じ開発コンテナ
+#  イメージ（ghcr.io/exshonda/asp3_core-dev）で実行する．SDK は west を使わず
+#  submodule 直参照（GUI生成ツール不要）のため，submodules:recursive で取得すれば
+#  arm-none-eabi-gcc だけで cmake ビルドが通る（経緯は docs/TODO.md §1）．
+#
+#  テスト（test_porting / testexec）の実行は実機 EVK-MIMXRT685 が必要なため
+#  CI ではビルドのみ（QEMU に RT685 モデルは無い）．実機検証の記録は
+#  docs/verification.md と asp3_core の docs/dev/nxp-integration.md を参照．
+#
+name: CI
+
+on:
+  push:
+    branches: [main, 'feat/**']
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  #
+  #  EVK-MIMXRT685（SDK統合・実機ターゲット）：build only
+  #
+  build:
+    name: Build evkmimxrt685/sample1 (Cortex-M33 + MCUXpresso SDK)
+    runs-on: ubuntu-24.04
+    container:
+      image: ghcr.io/exshonda/asp3_core-dev:20260606
+      #  イメージの既定ユーザはvscode（devcontainer用）のため、Actionsの
+      #  ランナーファイルに書けるようrootで実行する
+      options: --user root
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - name: Build (sample1)
+        working-directory: evkmimxrt685/sample1
+        run: |
+          cmake --preset Debug
+          cmake --build build/Debug
