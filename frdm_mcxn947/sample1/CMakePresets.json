@@ -1,0 +1,50 @@
+{
+  "version": 7,
+  "configurePresets": [
+    {
+      "name": "default",
+      "hidden": true,
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "toolchainFile": "${sourceDir}/../../asp3/asp3_core/cmake/toolchain-arm-none-eabi.cmake",
+      "cacheVariables": {},
+      "environment": {
+        "ARMGCC_DIR": "C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/13.2 Rel1",
+        "SdkRootDirPath": "C:/Users/honda/MCUXSDK/mcuxsdk",
+        "POSTPROCESS_UTILITY": "C:/Users/honda/.mcuxpressotools/mcux-fixelf-14.2.2/mcux-fixelf.exe",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "MCUX_VENV_PATH": "C:/Users/honda/.mcuxpressotools/.mcux-venv-3.12/Scripts",
+        "PATH": "$env{MCUX_VENV_PATH}${pathListSep}$penv{PATH}"
+      }
+    },
+    {
+      "name": "Debug",
+      "inherits": "default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "Release",
+      "inherits": "default",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "Debug",
+      "configurePreset": "Debug"
+    },
+    {
+      "name": "Release",
+      "configurePreset": "Release"
+    }
+  ],
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 27,
+    "patch": 0
+  }
+}

@@ -51,6 +51,22 @@ SDK 固有部は本リポジトリ管理、asp3_core は `ASP3_TARGET_DIR` で�
 - [ ] rename 一式を `genrename.py` で生成。
 - [ ] `target_os_awareness.py`：チップ層（NVIC）API の再エクスポート。
 
+> **MCX N 系（FRDM-MCXN947 で実機確認した固有の落とし穴）**
+> - **CTIMER のクロックディバイダ HALT**：`CLOCK_AttachClk(...CTIMER0)` の前に
+>   `CLOCK_SetClkDiv(kCLOCK_DivCtimer0Clk, 1U)` が必須。無いと CTIMER の機能クロックが
+>   流れず、`CTIMER_Init` の最初のレジスタ書込みで**バスストール**（カーネル起動が
+>   無音のまま停止。gdb の `next` で CTIMER_Init から戻らないのが切り分けの決め手）。
+>   順序は NXP の `_boards/frdmmcxn947/driver_examples/ctimer/.../hardware_init.c` に従う。
+> - **Secure ペリフェラルエイリアス**：MCXN は Secure(0x5000_xxxx)/NS(0x4000_xxxx) の
+>   二重エイリアスを持つ。Secure ブートでは**`-mcmse` をコンパイルオプションに付与**し、
+>   CMSIS ヘッダが Secure エイリアスを選ぶ（`__ARM_FEATURE_CMSE` 有効）ようにする。
+>   `TOPPERS_ENABLE_TRUSTZONE`（EXC_RETURN）とセットで Secure 実行に一貫させる。
+> - **シリアルは LP_FLEXCOMM 上の LPUART**：`core/drivers/lpflexcomm/lpuart` の
+>   fsl_lpuart を使い、`LPUART_Init` の前に `LP_FLEXCOMM_Init(inst, LP_FLEXCOMM_PERIPH_LPUART)`。
+> - **内蔵フラッシュブート**：FlexSPI/FCFB 不要。ld の `--undefined=<FCFB>` も不要。
+> - **HRT は CLK_1M を当てにしない**：`CLOCK_GetClk1MFreq()` は固定 1000000 を返すが
+>   CLK_1M 自体が無効のことがある。確実に走っている FRO_HF をディバイダで分周する。
+
 ## Step 4. ボードプロジェクト `<board>/<app>/`
 
 `evkmimxrt685/sample1` をコピー（build/ は除く）。

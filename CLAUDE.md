@@ -16,9 +16,11 @@ asp3_mcuxsdk/
 ├── asp3/
 │   ├── asp3_mcuxsdk.cmake           ← 協調ヘルパ（ASP3_TARGET_DIR 等の解決）
 │   ├── asp3_core/                   ← submodule（純カーネル＋全アーキ/チップ依存部）※public
-│   └── target/evkmimxrt685_mcuxsdk/ ← NXP ターゲット依存部
-├── sdk/                             ← MCUXpresso SDK（submodule 直参照：core/devices-rt/cmsis/components）
-├── evkmimxrt685/sample1/            ← ボード/アプリ（CMakePresets：Debug 等）
+│   ├── arch/arm_m_gcc/{imxrt600,mcxn947}_mcuxsdk/ ← NXP チップ依存部
+│   └── target/{evkmimxrt685,frdmmcxn947}_mcuxsdk/ ← NXP ターゲット依存部
+├── sdk/                             ← MCUXpresso SDK（submodule 直参照：core/devices-rt/devices-mcx/cmsis/components）
+├── evkmimxrt685/sample1/            ← EVK-MIMXRT685 ボード/アプリ（CMakePresets：Debug 等）
+├── frdm_mcxn947/sample1/            ← FRDM-MCXN947 ボード/アプリ（同上）
 ├── docs/                            ← host-setup / tech-notes / verification / TODO
 ├── .github/workflows/ci.yml         ← build-only CI（共有 dev コンテナ）
 └── .claude/skills/porting-asp3-to-nxp/  ← 移植ガイドskill
@@ -32,7 +34,7 @@ asp3_mcuxsdk/
 1. **`asp3/asp3_core/`（submodule）配下を直接編集しない**。カーネル本体は上流 ASP3 追従領域。
    変更が必要なら asp3_core リポジトリ側で行い、その `AGENTS.md` の規約（`kernel/`・`include/`・
    `library/` 編集禁止、変更は `target/`・`syssvc/`・新規ファイルに限定）に従う。
-   本リポジトリの作業は **NXP 側ファイル（`asp3/target/`・`asp3/asp3_mcuxsdk.cmake`・`evkmimxrt685/`）** に閉じる。
+   本リポジトリの作業は **NXP 側ファイル（`asp3/arch/`・`asp3/target/`・`asp3/asp3_mcuxsdk.cmake`・`evkmimxrt685/`・`frdm_mcxn947/`）** に閉じる。
 2. **カーネル内で動的メモリ確保を使わない**（`malloc`/`new` 等禁止。静的生成のみ）。
 
 ## 2. 取得・ビルド・実機確認

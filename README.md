@@ -18,11 +18,14 @@ SDK 固有の target 依存部・アプリ・移植ノウハウを本リポジ�
 
 - `asp3/asp3_core/`: 共通の TOPPERS/ASP3 RTOS 本体（submodule・純カーネル）
 - `asp3/asp3_mcuxsdk.cmake`: 協調ヘルパ（`ASP3_TARGET_DIR` などの解決）
-- `asp3/arch/arm_m_gcc/imxrt600_mcuxsdk/`: チップ依存部（SDK 版）
-- `asp3/target/evkmimxrt685_mcuxsdk/`: ターゲット依存部（SDK 版）
-- `sdk/`: MCUXpresso SDK（submodule・`mcuxsdk-manifests` release/26.03.00 直参照）
-- `evkmimxrt685/`: EVK-MIMXRT685 向けのボードフォルダ
-- `evkmimxrt685/sample1/`: サンプルアプリケーション（CMake・VS Code のプロジェクトルート）
+- `asp3/arch/arm_m_gcc/imxrt600_mcuxsdk/`: チップ依存部（i.MX RT685・SDK 版）
+- `asp3/arch/arm_m_gcc/mcxn947_mcuxsdk/`: チップ依存部（MCX N947・SDK 版）
+- `asp3/target/evkmimxrt685_mcuxsdk/`: ターゲット依存部（EVK-MIMXRT685・SDK 版）
+- `asp3/target/frdmmcxn947_mcuxsdk/`: ターゲット依存部（FRDM-MCXN947・SDK 版）
+- `sdk/`: MCUXpresso SDK（submodule・`mcuxsdk-manifests` release/26.03.00 直参照。
+  i.MX RT は `devices-rt`、MCX N は `devices-mcx`）
+- `evkmimxrt685/sample1/`: EVK-MIMXRT685 サンプル（CMake・VS Code のプロジェクトルート）
+- `frdm_mcxn947/sample1/`: FRDM-MCXN947 サンプル（同上）
 - `docs/`: ホスト構築・検証記録・技術ノート
 
 `evkmimxrt685/sample1/` を CMake・VS Code（MCUXpresso 拡張）のプロジェクトルートとして扱います。
@@ -102,6 +105,7 @@ VS Code で `evkmimxrt685/sample1` フォルダを開きます。詳細手順（
 | ボード | 詳細手順 |
 |--------|----------|
 | EVK-MIMXRT685 | [evkmimxrt685/sample1/README.md](evkmimxrt685/sample1/README.md) |
+| FRDM-MCXN947 | [frdm_mcxn947/sample1/README.md](frdm_mcxn947/sample1/README.md) |
 
 コマンドラインでのビルドは次のとおりです。
 

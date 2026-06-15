@@ -1,0 +1,16 @@
+{
+  "version": "25.3",
+  "projectName": "asp3_sample1",
+  "projectType": "cmake-freestanding",
+  "toolchainPath": "C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/13.2 Rel1",
+  "linkedProjects": [],
+  "trustZoneType": "none",
+  "multicoreType": "none",
+  "sdk": {
+    "version": "26.3.0.0",
+    "path": "${userHome}/MCUXSDK/mcuxsdk",
+    "boardId": "frdmmcxn947",
+    "deviceId": "MCXN947",
+    "coreId": "cm33_core0"
+  }
+}

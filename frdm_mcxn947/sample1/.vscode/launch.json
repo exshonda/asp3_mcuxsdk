@@ -1,0 +1,59 @@
+{
+  "configurations": [
+    {
+      "type": "mcuxpresso-debug",
+      "name": "Debug asp.elf",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "executable": {
+        "elf": "${workspaceFolder}/build/Debug/asp.elf"
+      },
+      "stopAtSymbol": "main",
+      "probeSerialNumber": "",
+      "toolchainPath": "C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/13.2 Rel1/bin",
+      "isAttach": false,
+      "skipBuildBeforeDebug": false,
+      "gdbInitCommands": [
+        "set remotetimeout 600",
+        "set debug-file-directory",
+        "set non-stop off",
+        "set mem inaccessible-by-default off"
+      ],
+      "gdbServerConfigs": {
+        "linkserver": {
+          "device": "MCXN947:FRDM-MCXN947",
+          "core": "cm33_core0"
+        },
+        "segger": {
+          "device": "MCXN947_M33_0"
+        },
+        "pemicro": {}
+      },
+      "showDevDebugOutput": "raw"
+    },
+    {
+      "type": "mcuxpresso-debug",
+      "name": "Attach asp.elf (OS observation)",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "executable": {
+        "elf": "${workspaceFolder}/build/Debug/asp.elf"
+      },
+      "toolchainPath": "C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/13.2 Rel1/bin",
+      "isAttach": true,
+      "skipBuildBeforeDebug": true,
+      "gdbInitCommands": [
+        "set remotetimeout 600",
+        "set debug-file-directory",
+        "set non-stop off",
+        "set mem inaccessible-by-default off"
+      ],
+      "gdbServerConfigs": {
+        "linkserver": {},
+        "segger": {},
+        "pemicro": {}
+      },
+      "showDevDebugOutput": "none"
+    }
+  ]
+}

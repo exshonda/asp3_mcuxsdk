@@ -131,3 +131,60 @@ Phase A（300MHz・自前PLL設定）とはクロックが異なるので、`CPU
   環境ブロック（`${pathListSep}` マクロ使用・マシン固有絶対パス）を自動注入する。
   v3 のままだと CMake Tools の展開が失敗し Build できない。
   注入されたパスは本プロジェクトのビルドでは未参照のため実害なし
+
+## 9. MCX N（FRDM-MCXN947）固有の知見
+
+i.MX RT685（§1〜3）と**別 SoC ファミリ**。SDK デバイスは `sdk/devices-mcx`
+（submodule・`mcux-devices-mcx`）。RT685 と値・周辺が違うので流用しないこと。
+実機検証は `docs/verification.md`、移植手順は porting skill の `checklists/new-board.md`。
+
+- **CTIMER クロックディバイダの HALT（最重要・無音ハングの原因）**：MCX N の CTIMER は
+  per-instance のクロックディバイダ（CTIMERCLKDIV）が**既定で HALT**。`CLOCK_AttachClk`
+  だけでは機能クロックが流れず、`CTIMER_Init` の最初のレジスタ書込み（`base->IR`）で
+  **バスストール**する（応答待ちで永久停止＝カーネルが無音のまま起動しない）。
+  対策：`CLOCK_AttachClk` の**前に** `CLOCK_SetClkDiv(kCLOCK_DivCtimer0Clk, 1U)`。
+  NXP の `_boards/frdmmcxn947/driver_examples/ctimer/.../hardware_init.c` と同じ順序。
+- **Secure ペリフェラルエイリアス**：MCXN947 は Secure(0x5000_xxxx)/NS(0x4000_xxxx) の
+  二重エイリアス。CMSIS デバイスヘッダは `__ARM_FEATURE_CMSE` の有無でどちらの番地を
+  `CTIMER0`/`LPUART4`/`SYSCON` 等に割り当てるかを切替える。Secure ブートに合わせ
+  ビルドへ **`-mcmse`** を付与し Secure エイリアスを選ばせ、`TOPPERS_ENABLE_TRUSTZONE`
+  （§1・EXC_RETURN）と一貫させる。`target.cmake` と `frdm_mcxn947/sample1/CMakeLists.txt`
+  の両方の compile options に付ける（カーネル lib と fsl ドライバの双方に効かせる）。
+- **CLK_1M は当てにしない**：`CLOCK_GetClk1MFreq()` は固定 1000000 を返すが、CLK_1M
+  自体が SDK 既定構成では無効のことがある。HRT は確実に走っている **FRO_HF(48MHz)** を
+  CTIMER ディバイダで 48 分周し、正確に 1MHz を得る（§3 の RT685 +421ppm とは違い誤差ゼロ）。
+- **シリアルは LP_FLEXCOMM 上の LPUART**：`core/drivers/lpflexcomm/lpuart` の fsl_lpuart を
+  使う（RT685 の flexcomm/usart とは別）。`LPUART_Init` の前に
+  `LP_FLEXCOMM_Init(inst, LP_FLEXCOMM_PERIPH_LPUART)`、`RESET_ClearPeripheralReset`、
+  `CLOCK_AttachClk` が要る。FRDM-MCXN947 の VCOM は **LPUART4（LP_FLEXCOMM4・P1_8/P1_9）**。
+- **内蔵フラッシュブート**：XIP/FlexSPI/FCFB は不要。ld は `MCXN947_cm33_core0_flash.ld`
+  （TEXT_START=0x0）をコピーし `.kernel_vector`（`ALIGN(1024)`＝TMAX_INTNO 171→172 ベクタ
+  ×4=688B の 2 のべき乗）を `> m_text` に追加。RT685 の `--undefined=<FCFB>` は不要。
+
+## 10. Windows での LinkServer / gdb / VCOM 実機デバッグ手順
+
+§6・7 は Linux 前提（`/dev/ttyACM0`）。Windows（MCU-Link CMSIS-DAP）での実作業メモ：
+
+- **プローブ確認**：`& "C:\nxp\LinkServer_<ver>\LinkServer.exe" probes`
+  （FRDM-MCXN947 は `MCXN947 / FRDM-MCXN947`・Capabilities に DEBUG/VCOM/SIO）。
+- **書込み**：`LinkServer.exe flash "MCXN947:FRDM-MCXN947" load asp.elf`。
+  ただし **`flash load` 完了後はブートROMストールでターゲットが停止したまま**
+  （`Stopped (Was Reset)`）＝そのままでは走らない。
+- **走らせて VCOM を読む（確実な手順）**：gdbserver + gdb で `load` → `continue &` →
+  数百 ms 待ち → **`detach`**（デバッグ接続を解放するとターゲットは走り続ける）→ gdb 終了 →
+  LinkServer も終了 → **その後** COM ポートを開いて読む。
+  - **VCOM の COM 番号は `[System.IO.Ports.SerialPort]::GetPortNames()` で確認**
+    （FRDM-MCXN947 は「MCU-Link VCom Port (COMxx)」）。115200/8N1。
+  - **デバッグ接続中は MCU-Link が USB 再列挙し VCOM が一時的に消える/不安定**。
+    読むのはデバッグ解放後にし、`Open()` はリトライループで囲む。
+- **無音ハングの切り分け（CTIMER バスストールを特定した方法）**：
+  `arm-none-eabi-gdb -batch` で `target remote :3333` → `load` → 関数に breakpoint →
+  `continue`。**`continue` が返らない＝その先で停止している**。停止位置を関数単位で
+  追うには、対象関数で止めてから `while`＋**`next`** ループを回す。
+  **`next` がある呼出しから戻らず `E22`（Could not read registers）になった関数が犯人**
+  （本件は `CTIMER_Init`）。さらに `stepi`＋`info symbol $pc` で命令単位に追うと、
+  どのレジスタ書込みでストールするか（`base->IR=0xFF`）まで特定できる。
+  - **注意**：この LinkServer gdbserver では非同期 `interrupt`/`monitor halt` が
+    バッチで効かない（`Selected thread is running`）。停止状態の観測は
+    breakpoint か上記 `next`/`stepi` 法を使う（async halt に頼らない）。
+  - gdb の `set mem inaccessible-by-default off` は §6 同様付けておく。

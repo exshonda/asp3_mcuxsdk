@@ -5,6 +5,42 @@ EVK-MIMXRT685（Phase B＝MCUXpresso SDK 統合ビルド）の実機検証スナ
 Phase A（asp3_core 本体のベアメタル `mimxrt685evk` ターゲット）の検証状況は
 asp3_core の `target/mimxrt685evk_gcc/target_user.md` を参照。
 
+## FRDM-MCXN947（MCX N947・追加ボード）の状況
+
+**実機検証済み（2026-06-15・FRDM-MCXN947 実機 + MCU-Link CMSIS-DAP V3.128 + LinkServer 26.5.59）**
+
+| 項目 | 結果 |
+|---|---|
+| ビルド（sample1 / test_porting） | **OK**（`asp.elf` 生成・移植コード警告ゼロ） |
+| sample1（バナー・タスク・`r` でディスパッチ） | **OK**（task1→`r`→`#rot_rdq`→task2 切替を確認） |
+| test_porting（TAP 6項目） | **6/6 passed**（syslog/tick_timer/task/semaphore/eventflag/alarm） |
+| dlynse 較正・testexec 全件 | 未実施（任意。test_porting でタイマ系は確認済み） |
+
+環境：MCUXpresso SDK release/26.03.00（MCX デバイス＝`mcux-devices-mcx` @ 5cd233f）／
+arm-none-eabi-gcc 13.2.1。残るビルド警告は newlib-nano（`_read`/`_write` 等の
+nosys スタブ）と RWX LOAD セグメントで、EVK-MIMXRT685 と同一構成のベースライン。
+
+構成上の要点：内蔵フラッシュブート（XIP/FCFB 不要）・LPUART4（LP_FLEXCOMM4）・
+コアクロック 150MHz（PLL150M）・HRT は CTIMER0 に FRO_HF/48＝**正確に 1MHz**。
+
+### ブリングアップで踏んだ MCXN947 固有の地雷（2件・いずれも実機で解決）
+
+1. **CTIMER クロックディバイダの HALT 未解除 → CTIMER_Init でバスストール**
+   症状：`CTIMER_Init()` 内の最初のレジスタ書込み（`base->IR=0xFF`）でハング、
+   カーネル起動が進まずシリアル無出力。原因：MCXN の CTIMER は per-instance の
+   クロックディバイダ（CTIMERCLKDIV）が既定で HALT のため機能クロックが流れず、
+   レジスタアクセスがバス応答待ちで止まる。対策：`CLOCK_AttachClk` の前に
+   **`CLOCK_SetClkDiv(kCLOCK_DivCtimer0Clk, 1U)`** を呼ぶ（NXP の ctimer サンプル
+   `_boards/frdmmcxn947/driver_examples/ctimer/.../hardware_init.c` と同じ順序）。
+2. **Secure 実行とペリフェラルエイリアス**：MCXN947 は Secure（0x5000_xxxx）/
+   Non-secure（0x4000_xxxx）のエイリアスを持つ。Secure ブートに合わせ
+   ビルドへ **`-mcmse`** を付与し、CMSIS ヘッダが Secure エイリアスを選ぶようにした
+   （`__ARM_FEATURE_CMSE` 有効時）。`TOPPERS_ENABLE_TRUSTZONE` 定義（EXC_RETURN）と
+   セットで Secure 実行に一貫させる。
+
+> 較正の細部（`SIL_DLY_TIM1/2`＝暫定 46/33＝150MHz 理論値）の dlynse 実機較正は任意。
+> 実機検証手順は `frdm_mcxn947/sample1/README.md` の「実機検証チェックリスト」を参照。
+
 ## 検証結果サマリ（SDK統合ビルド）
 
 | 項目 | 結果 |

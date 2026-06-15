@@ -1,0 +1,8 @@
+{
+  "recommendations": [
+    "NXPSemiconductors.mcuxpresso",
+    "ms-vscode.cmake-tools",
+    "ms-vscode.cpptools",
+    "ms-vscode.vscode-serial-monitor"
+  ]
+}

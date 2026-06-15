@@ -13,3 +13,7 @@
 [submodule "sdk/components"]
 	path = sdk/components
 	url = https://github.com/nxp-mcuxpresso/mcux-component
+[submodule "sdk/devices-mcx"]
+	path = sdk/devices-mcx
+	url = https://github.com/nxp-mcuxpresso/mcux-devices-mcx
+	branch = release/26.03.00

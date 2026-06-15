@@ -11,10 +11,17 @@
 
 | submodule | 実体（GitHub: nxp-mcuxpresso/...） | 用途 |
 |---|---|---|
-| `sdk/core` | mcuxsdk-core | 共通 fsl ドライバ（flexcomm/usart・ctimer・common 等） |
+| `sdk/core` | mcuxsdk-core | 共通 fsl ドライバ（flexcomm/usart・lpflexcomm/lpuart・ctimer・common 等） |
 | `sdk/devices-rt` | mcux-devices-rt | `RT600/MIMXRT685S/`（ヘッダ・system・gcc startup/ld・fsl_clock/power/reset） |
+| `sdk/devices-mcx` | mcux-devices-mcx | `MCXN/MCXN947/`（同上。FRDM-MCXN947 用。release/26.03.00＝SHA 5cd233f） |
 | `sdk/cmsis` | mcu-sdk-cmsis | CMSIS Core ヘッダ |
 | `sdk/components` | mcux-component | fsl_debug_console ヘッダ等 |
+
+> SoC ファミリごとに devices リポジトリが分かれる（i.MX RT＝`devices-rt`、
+> MCX N＝`devices-mcx`）。新ファミリのボードを足すときは、対応する
+> `mcux-devices-<family>` を `mcuxsdk-manifests` の release タグが指す SHA で
+> submodule 追加する（例：`git submodule add -b release/26.03.00
+> https://github.com/nxp-mcuxpresso/mcux-devices-mcx sdk/devices-mcx`）。
 
 examples リポジトリ（巨大）は submodule にしない。
 
