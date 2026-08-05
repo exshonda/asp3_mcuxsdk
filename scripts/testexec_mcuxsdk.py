@@ -23,27 +23,67 @@
 #  VCOM（--port）を読むプロセスは本スクリプトのみにすること（複数リーダは
 #  バイトを奪い合い誤判定の原因になる。並行実行も禁止）。
 #
+#  Linux / Windows 両対応:
+#    シリアルは POSIX では termios+select、Windows では pyserial を使う
+#    （Windows は `pip install pyserial` が必要）。--port 省略時は
+#    Linux=/dev/ttyACM0、Windows=MCU-Link VCom を自動検出。LinkServer /
+#    J-Link の実行ファイルも OS ごとの既定パスを探す（環境変数 LINKSERVER・
+#    JLINK で上書き可）。
+#
 #  使い方:
-#    scripts/testexec_mcuxsdk.py [--board evkmimxrt685/sample1] [--port /dev/ttyACM0] [test ...]
+#    scripts/testexec_mcuxsdk.py [--board evkmimxrt685/sample1] [--port PORT] [test ...]
 #    テスト名省略時は標準機能テスト一式（拡張パッケージ・perf・arm_* は対象外）
 #
 import argparse
+import glob
 import os
 import re
-import select
 import subprocess
 import sys
-import termios
 import time
+
+WINDOWS = (os.name == "nt")
+
+if not WINDOWS:
+    import select
+    import termios
 
 REPO = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 CORE = os.path.join(REPO, "asp3", "asp3_core")
 
-JLINK = "JLinkExe"
-LINKSERVER = (os.environ.get("LINKSERVER")
-              or ("/usr/local/LinkServer/LinkServer"
-                  if os.path.exists("/usr/local/LinkServer/LinkServer")
-                  else "LinkServer"))
+
+def cm(path):
+    """CMake 引数用のパス（Windows のバックスラッシュはエスケープ扱いされる）"""
+    return path.replace("\\", "/")
+
+
+def find_linkserver():
+    if os.environ.get("LINKSERVER"):
+        return os.environ["LINKSERVER"]
+    if WINDOWS:
+        #  既定インストール先 C:\NXP\LinkServer_<version>\LinkServer.exe（最新を選ぶ）
+        cands = sorted(glob.glob(r"C:\NXP\LinkServer_*\LinkServer.exe"))
+        if cands:
+            return cands[-1]
+        return "LinkServer.exe"
+    if os.path.exists("/usr/local/LinkServer/LinkServer"):
+        return "/usr/local/LinkServer/LinkServer"
+    return "LinkServer"
+
+
+def find_jlink():
+    if os.environ.get("JLINK"):
+        return os.environ["JLINK"]
+    if WINDOWS:
+        cands = sorted(glob.glob(r"C:\Program Files*\SEGGER\JLink*\JLink.exe"))
+        if cands:
+            return cands[-1]
+        return "JLink.exe"
+    return "JLinkExe"
+
+
+JLINK = find_jlink()
+LINKSERVER = find_linkserver()
 
 #  標準機能テスト（asp3_core test/testexec.py の TEST_SPEC から、
 #  拡張パッケージ（messagebuf/ovrhdr/rstr/subprio/inherit）・perf・arm_* を除く）
@@ -72,14 +112,19 @@ TEST_SPEC = {
 }
 
 
-def run(cmd, log_path, timeout=300):
+def run(cmd, log_path, cwd=None, timeout=300):
+    """shell 経由でコマンド実行（cd は使わず cwd で渡す＝Windows のドライブ跨ぎ対策）"""
     with open(log_path, "w") as out:
-        return subprocess.call(cmd, shell=True, timeout=timeout,
+        return subprocess.call(cmd, shell=True, cwd=cwd, timeout=timeout,
                                stdout=out, stderr=subprocess.STDOUT) == 0
 
 
 def check_port_free(port):
     """tty を読む他プロセスがいれば警告する（バイト奪い合い防止）"""
+    if WINDOWS:
+        #  Windows の COM ポートは排他オープンなので、他プロセスが掴んでいれば
+        #  open 時に例外になる（事前チェック不要）
+        return
     try:
         out = subprocess.run(["fuser", port], capture_output=True, text=True)
         pids = out.stdout.split()
@@ -90,15 +135,87 @@ def check_port_free(port):
         pass
 
 
+def default_port():
+    if not WINDOWS:
+        return "/dev/ttyACM0"
+    #  MCU-Link / J-Link の VCOM を自動検出（pyserial → 失敗時はレジストリ）
+    try:
+        from serial.tools import list_ports
+        for p in list_ports.comports():
+            text = f"{p.description} {p.manufacturer or ''} {p.hwid or ''}"
+            if re.search(r"MCU-?Link|J-?Link|VCom|USB Serial", text, re.I):
+                return p.device
+    except ImportError:
+        pass
+    try:
+        import winreg
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE,
+                            r"HARDWARE\DEVICEMAP\SERIALCOMM") as key:
+            for i in range(winreg.QueryInfoKey(key)[1]):
+                name, value, _ = winreg.EnumValue(key, i)
+                if "USBSER" in name.upper():
+                    return value
+    except OSError:
+        pass
+    return None
+
+
+class PosixSerialPort:
+    """termios + select（従来の Linux 動作をそのまま維持）"""
+
+    def __init__(self, port, baud=115200):
+        self.fd = os.open(port, os.O_RDONLY | os.O_NOCTTY | os.O_NONBLOCK)
+        attrs = termios.tcgetattr(self.fd)
+        attrs[0] = attrs[1] = attrs[3] = 0                       # raw
+        attrs[2] = termios.CS8 | termios.CREAD | termios.CLOCAL  # 8N1
+        attrs[4] = attrs[5] = getattr(termios, f"B{baud}")
+        termios.tcsetattr(self.fd, termios.TCSANOW, attrs)
+        termios.tcflush(self.fd, termios.TCIFLUSH)
+
+    def read(self, timeout):
+        r, _, _ = select.select([self.fd], [], [], timeout)
+        if not r:
+            return b""
+        try:
+            return os.read(self.fd, 4096)
+        except BlockingIOError:
+            return b""
+
+    def close(self):
+        os.close(self.fd)
+
+
+class PySerialPort:
+    """Windows 用（pyserial）"""
+
+    def __init__(self, port, baud=115200):
+        try:
+            import serial
+        except ImportError:
+            sys.exit("ERROR: pyserial is required on Windows "
+                     "(pip install pyserial)")
+        self.ser = serial.Serial(port, baud, timeout=0.5)
+        self.ser.reset_input_buffer()
+
+    def read(self, timeout):
+        #  ser.timeout への代入は（同値でも）_reconfigure_port() を呼び、win32 では
+        #  SetCommState＝CDC SET_LINE_CODING になる。受信中に毎回やるとバイトが
+        #  化けるので、値が変わるときだけ設定する（dlynse で実際に化けた）
+        if self.ser.timeout != timeout:
+            self.ser.timeout = timeout
+        data = self.ser.read(1)          # timeout まで待つ
+        if data:
+            pending = self.ser.in_waiting
+            if pending:
+                data += self.ser.read(pending)
+        return data
+
+    def close(self):
+        self.ser.close()
+
+
 def open_serial(port):
-    fd = os.open(port, os.O_RDONLY | os.O_NOCTTY | os.O_NONBLOCK)
-    attrs = termios.tcgetattr(fd)
-    attrs[0] = attrs[1] = attrs[3] = 0                       # raw
-    attrs[2] = termios.CS8 | termios.CREAD | termios.CLOCAL  # 8N1
-    attrs[4] = attrs[5] = termios.B115200
-    termios.tcsetattr(fd, termios.TCSANOW, attrs)
-    termios.tcflush(fd, termios.TCIFLUSH)
-    return fd
+    return PySerialPort(port) if WINDOWS else PosixSerialPort(port)
 
 
 #  判定マーカー（asp3_core scripts/ci/run_testexec.py と同一仕様）
@@ -136,16 +253,10 @@ def judge_text(test, text):
     return None, ""
 
 
-def judge_serial(test, fd, deadline, log_file):
+def judge_serial(test, sp, deadline, log_file):
     buf = b""
     while time.time() < deadline:
-        r, _, _ = select.select([fd], [], [], 0.5)
-        if not r:
-            continue
-        try:
-            chunk = os.read(fd, 4096)
-        except BlockingIOError:
-            continue
+        chunk = sp.read(0.5)
         if not chunk:
             continue
         buf += chunk
@@ -160,7 +271,9 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--board", default="evkmimxrt685/sample1",
                     help="ボードプロジェクトのパス（REPO相対）")
-    ap.add_argument("--port", default="/dev/ttyACM0")
+    ap.add_argument("--port", default=None,
+                    help="シリアルポート（省略時: Linux=/dev/ttyACM0、"
+                         "Windows=MCU-Link VCom を自動検出）")
     ap.add_argument("--flash-tool", choices=["linkserver", "jlink"],
                     default="linkserver")
     ap.add_argument("--ls-device", default="MIMXRT685S:EVK-MIMXRT685")
@@ -189,21 +302,24 @@ def main():
             results[test] = (verdict or "TIMEOUT", detail)
         return summary(results)
 
-    check_port_free(args.port)
+    port = args.port or default_port()
+    if port is None:
+        sys.exit("ERROR: serial port not found -- specify it with --port")
+    print(f"serial port: {port}", flush=True)
+    check_port_free(port)
 
     #  書込みコマンド（LinkServer＝load後にリセット実行／J-Link＝loadfile→r→g）
+    #  いずれも cwd=build_dir で実行する（相対 asp.elf 前提）
     if args.flash_tool == "jlink":
         jlink_cmd = os.path.join(build_dir, "flash.jlink")
         with open(jlink_cmd, "w") as f:
             f.write("loadfile asp.elf\nr\ng\nqc\n")
         flash_cmd = (
-            f"cd {build_dir} && {JLINK} -device {args.jlink_device} -if SWD "
-            f"-speed 4000 -autoconnect 1 -NoGui 1 -CommandFile {jlink_cmd}"
+            f"\"{JLINK}\" -device {args.jlink_device} -if SWD "
+            f"-speed 4000 -autoconnect 1 -NoGui 1 -CommandFile \"{jlink_cmd}\""
         )
     else:
-        flash_cmd = (
-            f"cd {build_dir} && {LINKSERVER} flash {args.ls_device} load asp.elf"
-        )
+        flash_cmd = f"\"{LINKSERVER}\" flash {args.ls_device} load asp.elf"
 
     for test in args.tests:
         spec = TEST_SPEC.get(test)
@@ -215,31 +331,33 @@ def main():
         print(f"== {test} ==", flush=True)
 
         cfg_cmd = (
-            f"cmake --preset Debug -B {build_dir} "
-            f"-DASP3_APPLDIR={CORE}/test "
+            f"cmake --preset Debug -B \"{cm(build_dir)}\" "
+            f"\"-DASP3_APPLDIR={cm(CORE)}/test\" "
             f"-DASP3_APPLNAME={applname} "
             f"-DASP3_APPCFGNAME={cfgname} "
-            f"\"-DASP3_EXTRA_APP_C_FILES={CORE}/syssvc/test_svc.c\""
+            f"\"-DASP3_EXTRA_APP_C_FILES={cm(CORE)}/syssvc/test_svc.c\""
         )
         log = os.path.join(logs, f"{test}.build.log")
-        if not (run(f"cd {board_dir} && {cfg_cmd}", log) and
-                run(f"cmake --build {build_dir}", log.replace(".build.", ".ninja."))):
+        if not (run(cfg_cmd, log, cwd=board_dir) and
+                run(f"cmake --build \"{cm(build_dir)}\"",
+                    log.replace(".build.", ".ninja."), cwd=board_dir)):
             results[test] = ("BUILD_FAIL", f"see {log}")
             print("   BUILD_FAIL", flush=True)
             continue
 
         #  シリアルは書込みより先に開く（起動直後のバナー取りこぼし防止）
-        fd = open_serial(args.port)
+        sp = open_serial(port)
         try:
-            if not run(flash_cmd, os.path.join(logs, f"{test}.flash.log")):
+            if not run(flash_cmd, os.path.join(logs, f"{test}.flash.log"),
+                       cwd=build_dir):
                 results[test] = ("FLASH_FAIL", "")
                 print("   FLASH_FAIL", flush=True)
                 continue
             with open(os.path.join(logs, f"{test}.serial.log"), "wb") as slog:
-                verdict, detail = judge_serial(test, fd,
+                verdict, detail = judge_serial(test, sp,
                                                time.time() + args.run_timeout, slog)
         finally:
-            os.close(fd)
+            sp.close()
         results[test] = (verdict, detail)
         print(f"   {verdict} {detail}", flush=True)
     return summary(results)
