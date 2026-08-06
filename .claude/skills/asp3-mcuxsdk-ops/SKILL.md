@@ -178,7 +178,7 @@ python ..\..\scripts\testexec_mcuxsdk.py --board frdm_mcxn947/sample1 --ls-devic
 判定は完走マーカ（`All check points passed.` / hrt1・dlynse は専用マーカ）。
 `perf*`・`arm_*` は対象外。既知 FAIL は cpuexc1/cpuexc4（arm_m 共通・上流由来。
 asp3_core `docs/dev/issue-cpuexc-armm.md`）、cpuexc10 は SKIP。
-**期待値（全36件）: PASS=32, FAIL=2（cpuexc1/cpuexc4）, SKIP=1（cpuexc10）**
+**期待値（全36件）: PASS=33, FAIL=2（cpuexc1/cpuexc4）, SKIP=1（cpuexc10）**
 — これ以外が出たら回帰を疑う。
 
 ## 5. デバッガ切替（標準 CMSIS-DAP+LinkServer ／ J-Link はオプション）
@@ -227,6 +227,18 @@ asp3_core `docs/dev/issue-cpuexc-armm.md`）、cpuexc10 は SKIP。
   `r` 送信で `task2` 切替まで確認。
 - `scripts/testexec_mcuxsdk.py` を Windows 対応（pyserial 経路・`cwd` 実行・CMake パスの `/` 化・
   LinkServer/J-Link パス自動探索）。全36件を実行し
-  **PASS=32, FAIL=2（cpuexc1/cpuexc4＝既知）, SKIP=1（cpuexc10）** を確認。
+  **PASS=33, FAIL=2（cpuexc1/cpuexc4＝既知）, SKIP=1（cpuexc10）** を確認
+  （当初 PASS=32 と記載していたが合計が 36 に合わない転記誤り。2026-08-06 に訂正）。
 - Linux 経路（termios+select・`/dev/ttyACM0`・`fuser`・`/usr/local/LinkServer`）は分岐内に温存。
   ただし**この日の Linux 実機での再確認は未実施**。
+
+## 裏取り状況（2026-08-06 実行・Windows 11 ホスト / EVK-MIMXRT685 実機・J-Link FW）
+
+- MCU-Link が **J-Link ファームウェア**の状態で一連の作業を確認（CMSIS-DAP に戻す必要なし）。
+- `cmake --preset Debug && cmake --build build/Debug` → `asp.elf` 生成（m_flash_config・m_interrupts は
+  100% 使用が正常）。`JLink.exe -device MIMXRT685S_M33 -if SWD -speed 4000 -CommandFile ...` で
+  FlexSPI bank0 @0x08000000 へ書込み成功、バナー→`task1 is running`→`r` で `task2` 切替を確認。
+- `scripts/testexec_mcuxsdk.py --flash-tool jlink --port COM19` で全36件を実行し
+  **PASS=33, FAIL=2（cpuexc1/cpuexc4）, SKIP=1（cpuexc10）** を確認。
+- **J-Link FW 時は `--port` の明示が必要**：ラッパの自動検出は `MCU-Link VCom` を探すが、
+  J-Link FW の VCOM は `JLink CDC UART Port (COMn)` という名前で出るため引っかからない。
