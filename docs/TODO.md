@@ -6,7 +6,7 @@
 ## 1. CI（GitHub Actions） — 完了（2026-06-12）
 
 `.github/workflows/ci.yml` を新設。asp3_core と同じ開発コンテナイメージ
-（`ghcr.io/exshonda/asp3_core-dev:20260606`）で `actions/checkout`
+（`ghcr.io/toppers/asp3_core-dev:20260606`）で `actions/checkout`
 （`submodules: recursive`）→ `cmake --preset Debug && cmake --build` の
 build-only ジョブ。CMakePresets の machine 固有 env（`/home/honda/...`）は
 ビルドに不要（PATH 上の arm-none-eabi-gcc を使う＝当該パス不在のローカルでも

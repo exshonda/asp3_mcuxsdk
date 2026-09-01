@@ -10,7 +10,7 @@ TOPPERS/ASP3 RTOS 上で動く `sample1` タスクが UART にバナーとメッ
 - VS Code + CMake + MCUXpresso 拡張によるクロスコンパイル／デバッグ環境の構築
 - ASP3 のタスク・セマフォ・サービスコールの基本的な使い方
 
-純カーネル [asp3_core](https://github.com/exshonda/asp3_core) を submodule（`asp3/asp3_core`）として参照し、
+純カーネル [asp3_core](https://github.com/toppers/asp3_core) を submodule（`asp3/asp3_core`）として参照し、
 SDK 固有の target 依存部・アプリ・移植ノウハウを本リポジトリで管理します
 （`ASP3_TARGET_DIR`／`ASP3_LIBRARY_ONLY` 方式。asp3_pico_sdk / asp3_fsp / asp3_stm32cube と同じ構成）。
 
@@ -38,7 +38,7 @@ SDK は west を使わず、`mcuxsdk-manifests` release/26.03.00 が指すリビ
 submodule（asp3_core・MCUXpresso SDK）を含めて取得します。
 
 ```bash
-git clone --recurse-submodules https://github.com/exshonda/asp3_mcuxsdk.git
+git clone --recurse-submodules https://github.com/toppers/asp3_mcuxsdk.git
 # 既存clone後に submodule を取得する場合:
 # git submodule update --init --recursive
 ```
@@ -192,6 +192,6 @@ testexec の実行はボードと VCOM を占有するため並行実行は禁�
 | [docs/TODO.md](docs/TODO.md) | 残課題とアプリプロジェクト追加手順 |
 
 経緯（計画・実施結果）の正本は asp3_core 側の
-[docs/dev/nxp-integration.md](https://github.com/exshonda/asp3_core/blob/main/docs/dev/nxp-integration.md) です。
+[docs/dev/nxp-integration.md](https://github.com/toppers/asp3_core/blob/main/docs/dev/nxp-integration.md) です。
 そこに **EXC_RETURN／TrustZone・ASP3 ベクタテーブル配置・HRT 精度** など、本統合特有の
 技術ポイントの root cause 解析がまとまっています。

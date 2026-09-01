@@ -28,7 +28,7 @@ examples リポジトリ（巨大）は submodule にしない。
 ## クローン
 
 ```bash
-git clone --recurse-submodules https://github.com/exshonda/asp3_mcuxsdk.git
+git clone --recurse-submodules https://github.com/toppers/asp3_mcuxsdk.git
 # 既存クローンで後から：
 git submodule update --init --recursive
 ```

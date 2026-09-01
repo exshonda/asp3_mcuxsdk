@@ -2,7 +2,7 @@
 #		CI（EVK-MIMXRT685 / MCUXpresso SDK統合 build-only）
 #
 #  asp3_core の ci.yml（mimxrt685evk build-only ジョブ）と同じ開発コンテナ
-#  イメージ（ghcr.io/exshonda/asp3_core-dev）で実行する．SDK は west を使わず
+#  イメージ（ghcr.io/toppers/asp3_core-dev）で実行する．SDK は west を使わず
 #  submodule 直参照（GUI生成ツール不要）のため，submodules:recursive で取得すれば
 #  arm-none-eabi-gcc だけで cmake ビルドが通る（経緯は docs/TODO.md §1）．
 #
@@ -30,7 +30,7 @@ jobs:
     name: Build evkmimxrt685/sample1 (Cortex-M33 + MCUXpresso SDK)
     runs-on: ubuntu-24.04
     container:
-      image: ghcr.io/exshonda/asp3_core-dev:20260606
+      image: ghcr.io/toppers/asp3_core-dev:20260606
       #  イメージの既定ユーザはvscode（devcontainer用）のため、Actionsの
       #  ランナーファイルに書けるようrootで実行する
       options: --user root

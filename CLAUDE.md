@@ -40,7 +40,7 @@ asp3_mcuxsdk/
 ## 2. 取得・ビルド・実機確認
 
 ```bash
-git clone --recurse-submodules https://github.com/exshonda/asp3_mcuxsdk.git
+git clone --recurse-submodules https://github.com/toppers/asp3_mcuxsdk.git
 # 既存clone: git submodule update --init --recursive
 
 cd evkmimxrt685/sample1

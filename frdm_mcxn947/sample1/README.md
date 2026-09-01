@@ -28,7 +28,7 @@ submodule（asp3_core・MCUXpresso SDK＝core/devices-rt/**devices-mcx**/cmsis/c
 含めて取得します。
 
 ```bash
-git clone --recurse-submodules https://github.com/exshonda/asp3_mcuxsdk.git
+git clone --recurse-submodules https://github.com/toppers/asp3_mcuxsdk.git
 # 既存clone: git submodule update --init --recursive
 ```
 

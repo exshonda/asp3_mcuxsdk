@@ -14,7 +14,7 @@ submodule（asp3_core・MCUXpresso SDK）を含めて取得します。VS Code �
 （`Ctrl + Shift + @`）で実行できます。
 
 ```bash
-git clone --recurse-submodules https://github.com/exshonda/asp3_mcuxsdk.git
+git clone --recurse-submodules https://github.com/toppers/asp3_mcuxsdk.git
 ```
 
 ## プロジェクトを開く

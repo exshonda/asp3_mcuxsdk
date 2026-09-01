@@ -123,8 +123,8 @@ cat /dev/ttyACM0          # VCOM を読むプロセスは同時に1つだけ
 - 実機検証スナップショットと再実行手順: `docs/verification.md`
 - 動作確認済み: EVK-MIMXRT685、MCUXpresso SDK `mcuxsdk-manifests` release/26.03.00、
   arm-none-eabi-gcc 13.2.1、LinkServer（CMSIS-DAP）・J-Link 切替可
-- 同型の移植スキル: [asp3_stm32cube](https://github.com/exshonda/asp3_stm32cube)（STM32Cube HAL）、
-  [asp3_fsp](https://github.com/exshonda/asp3_fsp)（Renesas RA / FSP）、
+- 同型の移植スキル: [asp3_stm32cube](https://github.com/toppers/asp3_stm32cube)（STM32Cube HAL）、
+  [asp3_fsp](https://github.com/toppers/asp3_fsp)（Renesas RA / FSP）、
   asp3_pico_sdk（Raspberry Pi Pico）
 - ベアメタル版（SDK不使用・自前ブート）: asp3_core 本体の `target/mimxrt685evk_gcc`
   （Phase A。SDK版とは TrustZone/クロック/ブートが**逆または別**なので値を流用しないこと）
