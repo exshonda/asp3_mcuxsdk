@@ -1,6 +1,6 @@
 [submodule "asp3/asp3_core"]
 	path = asp3/asp3_core
-	url = https://github.com/exshonda/asp3_core.git
+	url = https://github.com/toppers/asp3_core.git
 [submodule "sdk/core"]
 	path = sdk/core
 	url = https://github.com/nxp-mcuxpresso/mcuxsdk-core
